@@ -41,23 +41,23 @@
 #include "LostLepton_MuCS_TTbar.h"
 #include "TTJetsReWeighting.h"
 //#include "v160714_newMuonID_accNoSingleTop_bin7f6_trkSF_EffsHeader_MuCS.h"
-#include "new_EffsHeader_MuCS.h"
+#include "v6_EffsHeader_MuCS.h"
 #include "TriggerEff.h"
-#include "SusyAnaTools/Tools/PDFUncertainty.h"
+//#include "SusyAnaTools/Tools/PDFUncertainty.h"
 
 //const double isotrackvetoeff = 0.563499421;
 const bool applyisotrkveto = false; // should be false
 //const double isotrackvetoeff = 1;
-
-const bool use_muon_control_sample = true;
-const bool use_electron_control_sample = false;
-
 double isotrkeff[NSEARCH_BINS];
+
+const bool use_muon_control_sample = false;
+const bool use_electron_control_sample = true;
+const double electron_purity = 0.96;
 
 void LoopLLCal( AccRecoIsoEffs& myAccRecoIsoEffs, TTJetsSampleWeight& myTTJetsSampleWeight )
 {
   BaseHistgram myBaseHistgram;
-  myBaseHistgram.BookHistgram("new_test.root");
+  myBaseHistgram.BookHistgram("v1_Cal.root");
 
 NTupleReader *tr =0;
 
@@ -101,8 +101,8 @@ NTupleReader *tr =0;
 
     //std::cout << "The PDFUncertainty is registered here" << std::endl;
  
-    PDFUncertainty pdf;
-    tr.registerFunction(pdf);
+    //PDFUncertainty pdf;
+    //tr.registerFunction(pdf);
 
     double thisweight = (*iter_TTJetsSampleInfos).weight;
     std::cout << "Weight " << thisweight << std::endl;
@@ -145,10 +145,10 @@ NTupleReader *tr =0;
       if (passBaselinelostlept)
 	//if (passInvertedBaseline)
       {
-	const double pdf_Unc_Up = tr.getVar<double>("NNPDF_From_Median_Up");
-	const double pdf_Unc_Down = tr.getVar<double>("NNPDF_From_Median_Down");
-        const double scaleUp = tr.getVar<double>("Scaled_Variations_Up");
-        const double scaleDown = tr.getVar<double>("Scaled_Variations_Down");
+	//const double pdf_Unc_Up = tr.getVar<double>("NNPDF_From_Median_Up");
+	//const double pdf_Unc_Down = tr.getVar<double>("NNPDF_From_Median_Down");
+        //const double scaleUp = tr.getVar<double>("Scaled_Variations_Up");
+        //const double scaleDown = tr.getVar<double>("Scaled_Variations_Down");
  
         //std::cout << "pdfUp = " << pdf_Unc_Up << std::endl;
 	const double systWeight=1.0;
@@ -550,7 +550,6 @@ NTupleReader *tr =0;
           {
             myAccRecoIsoEffs.mtw100[ptbin_number_allreco]+=thisweight;
             myAccRecoIsoEffs.mtw100_MC[ptbin_number_allreco]+=thisweight*thisweight;
-          }
 
           //muon CS statistics
           //int searchbin_id = theSearchBins.find_Binning_Index( nbottomjets , ntopjets , MT2, met );
@@ -562,6 +561,7 @@ NTupleReader *tr =0;
             myAccRecoIsoEffs.nevents_mus_CS_SB_MC[searchbin_id]++;
             myAccRecoIsoEffs.nevents_mus_CS_SB_Normalized[searchbin_id]+=thisweight;
           }
+	  }
         }
 
 	if (nElectrons == 0 && nMuons == 0 && (ngenmu==1 || ngenmu==2 || ngenel==1 || ngenel==2))
@@ -599,14 +599,39 @@ NTupleReader *tr =0;
     else
     {
       isotrkeff[searchbinc]=neventsSB_afterITV[searchbinc]/neventsSB[searchbinc];
-      //std::cout << "neventsSB[" << searchbinc << "] = " << neventsSB[searchbinc] << " , neventsSB_afterITV = " << neventsSB_afterITV[searchbinc] << " , ratio = " << isotrkeff[searchbinc] << std::endl;
-      std::cout << "isotrackeff_SB[" << searchbinc << "] = " << isotrkeff[searchbinc] << std::endl;
+      std::cout << "isotrack bin " << searchbinc << " pass " << neventsSB_afterITV[searchbinc] << " all " << neventsSB[searchbinc] << " eff " << isotrkeff[searchbinc] << " raw pass " << neventsSB_afterITV_MC[searchbinc] << " raw all " << neventsSB_MC[searchbinc] << std::endl;
+      //std::cout << "isotrackeff_SB[" << searchbinc << "] = " << isotrkeff[searchbinc] << std::endl;
     }
   }
+
+   std::cout << "13 () = " <<(neventsSB_afterITV[13]+neventsSB_afterITV[14])/(neventsSB[13]+neventsSB[14])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[13] + neventsSB_afterITV_MC[14] ,neventsSB_MC[13] + neventsSB_MC[14]) << std::endl;
+   std::cout << "18 () = " <<(neventsSB_afterITV[18]+neventsSB_afterITV[19]+neventsSB_afterITV[20])/(neventsSB[18]+neventsSB[19]+neventsSB[20])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[18] + neventsSB_afterITV_MC[19] + neventsSB_afterITV_MC[20] ,neventsSB_MC[18] + neventsSB_MC[19] + neventsSB_MC[20]) << std::endl;
+   std::cout << "19 () = " <<(neventsSB_afterITV[18]+neventsSB_afterITV[19]+neventsSB_afterITV[20])/(neventsSB[18]+neventsSB[19]+neventsSB[20])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[18] + neventsSB_afterITV_MC[19] + neventsSB_afterITV_MC[20] ,neventsSB_MC[18] + neventsSB_MC[19] + neventsSB_MC[20]) << std::endl;
+   std::cout << "20 () = " <<(neventsSB_afterITV[18]+neventsSB_afterITV[19]+neventsSB_afterITV[20])/(neventsSB[18]+neventsSB[19]+neventsSB[20])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[18] + neventsSB_afterITV_MC[19] + neventsSB_afterITV_MC[20] ,neventsSB_MC[18] + neventsSB_MC[19] + neventsSB_MC[20]) << std::endl;
+   std::cout << "29 () = " <<(neventsSB_afterITV[29]+neventsSB_afterITV[28])/(neventsSB[28]+neventsSB[29])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[29] + neventsSB_afterITV_MC[28] ,neventsSB_MC[29] + neventsSB_MC[28]) << std::endl;
+   std::cout << "34 () = " <<(neventsSB_afterITV[34]+neventsSB_afterITV[35]+neventsSB_afterITV[36])/(neventsSB[34]+neventsSB[35]+neventsSB[36])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[34] + neventsSB_afterITV_MC[35] + neventsSB_afterITV_MC[36] ,neventsSB_MC[34] + neventsSB_MC[35] + neventsSB_MC[36]) << std::endl;
+   std::cout << "35 () = " <<(neventsSB_afterITV[34]+neventsSB_afterITV[35]+neventsSB_afterITV[36])/(neventsSB[34]+neventsSB[35]+neventsSB[36])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[34] + neventsSB_afterITV_MC[35] + neventsSB_afterITV_MC[36] ,neventsSB_MC[34] + neventsSB_MC[35] + neventsSB_MC[36]) << std::endl;
+   std::cout << "36 () = " <<(neventsSB_afterITV[34]+neventsSB_afterITV[35]+neventsSB_afterITV[36])/(neventsSB[34]+neventsSB[35]+neventsSB[36])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[34] + neventsSB_afterITV_MC[35] + neventsSB_afterITV_MC[36] ,neventsSB_MC[34] + neventsSB_MC[35] + neventsSB_MC[36]) << std::endl;
+   std::cout << "40 () = " <<(neventsSB_afterITV[39]+neventsSB_afterITV[40])/(neventsSB[39]+neventsSB[40])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[39] + neventsSB_afterITV_MC[40] ,neventsSB_MC[39] + neventsSB_MC[40]) << std::endl;
+   std::cout << "51 () = " <<(neventsSB_afterITV[51]+neventsSB_afterITV[50])/(neventsSB[51]+neventsSB[50])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[51] + neventsSB_afterITV_MC[50] ,neventsSB_MC[51] + neventsSB_MC[50]) << std::endl;
+   std::cout << "57 () = " <<(neventsSB_afterITV[57]+neventsSB_afterITV[56])/(neventsSB[57]+neventsSB[56])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[56] + neventsSB_afterITV_MC[57] ,neventsSB_MC[56] + neventsSB_MC[57]) << std::endl;
+   std::cout << "61 () = " <<(neventsSB_afterITV[61]+neventsSB_afterITV[60])/(neventsSB[61]+neventsSB[60])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[60] + neventsSB_afterITV_MC[61] ,neventsSB_MC[60] + neventsSB_MC[61]) << std::endl;
+   std::cout << "67 () = " <<(neventsSB_afterITV[67]+neventsSB_afterITV[69])/(neventsSB[67]+neventsSB[69])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[67] + neventsSB_afterITV_MC[69] ,neventsSB_MC[67] + neventsSB_MC[69]) << std::endl;
+   std::cout << "77 () = " <<(neventsSB_afterITV[77]+neventsSB_afterITV[76])/(neventsSB[77]+neventsSB[76])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[76] + neventsSB_afterITV_MC[77] ,neventsSB_MC[76] + neventsSB_MC[77]) << std::endl;
+   std::cout << "79 () = " <<(neventsSB_afterITV[79]+neventsSB_afterITV[78])/(neventsSB[79]+neventsSB[78])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[79] + neventsSB_afterITV_MC[78] ,neventsSB_MC[79] + neventsSB_MC[78]) << std::endl;
+   std::cout << "81 () = " <<(neventsSB_afterITV[81]+neventsSB_afterITV[80])/(neventsSB[81]+neventsSB[80])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[81] + neventsSB_afterITV_MC[80] ,neventsSB_MC[81] + neventsSB_MC[80]) << std::endl;
+   std::cout << "83 () = " <<(neventsSB_afterITV[83]+neventsSB_afterITV[82])/(neventsSB[83]+neventsSB[82])<< " err = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[83] + neventsSB_afterITV_MC[82] ,neventsSB_MC[83] + neventsSB_MC[82]) << std::endl;
+
   for( int searchbinc = 0 ; searchbinc < NSEARCH_BINS ; ++searchbinc )
   {
     std::cout << "isoTrackErr[" << searchbinc << "] = " << myAccRecoIsoEffs.get_stat_Error(neventsSB_afterITV_MC[searchbinc],neventsSB_MC[searchbinc]) << ";" << std::endl;
   }
+
+  std::cout << "Muon CS # in Search Bins: " << std::endl;  
+  for( int searchbinc = 0 ; searchbinc < NSEARCH_BINS ; ++searchbinc )
+  {
+  std::cout << "bin " << searchbinc << " raw events " << myAccRecoIsoEffs.nevents_mus_CS_SB_MC[searchbinc] << " weighted events " << myAccRecoIsoEffs.nevents_mus_CS_SB_Normalized[searchbinc] << std::endl;
+  } 
 
 // debug
   /*for( int searchbinc = 0 ; searchbinc < NSEARCH_BINS ; ++searchbinc )
@@ -1202,23 +1227,23 @@ NTupleReader *tr =0;
   }//end of first loop
 
   // printSearchBin
-//  //std::cout << "Muon CS # in Search Bins: " << std::endl;  
-//  for( int i_cal = 0 ; i_cal < NSEARCH_BINS ; i_cal++ )
-//  {
+  //std::cout << "Muon CS # in Search Bins: " << std::endl;
+  //for( int i_cal = 0 ; i_cal < NSEARCH_BINS ; i_cal++ )
+  //{
 //    //myAccRecoIsoEffs.nevents_lept_exp_SB_MC[i_cal] = nevents_mus_exp_SB_MC[i_cal] + nevents_els_exp_SB_MC[i_cal];
 //    //nevents_lept_pred_SB_MC[i_cal] = nevents_mus_pred_SB_MC[i_cal] + nevents_els_pred_SB_MC[i_cal];
 //    //myAccRecoIsoEffs.nevents_lept_exp_SB_Normalized[i_cal] = nevents_mus_exp_SB_Normalized[i_cal] + nevents_els_exp_SB_Normalized[i_cal];
 //    //myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal] = nevents_mus_pred_SB_Normalized[i_cal] + nevents_els_pred_SB_Normalized[i_cal];
 //    //nevents_lept_pred_SB_Normalized[i_cal] = nevents_lept_pred_SB_MC[i_cal]*scale;
 //
-//    //std::cout << "idx: " << i_cal << "; MC Numbers: " << nevents_mus_CS_SB_MC[i_cal] << "; Normalized Numbers: " << nevents_mus_CS_SB_Normalized[i_cal] << std::endl;
-//    //std::cout << "Mus Exp MC Numbers: " << nevents_mus_exp_SB_MC[i_cal] << "; Mus Exp Normalized Numbers: " << nevents_mus_exp_SB_Normalized[i_cal] << std::endl;
+  //std::cout << "idx: " << i_cal << "; MC Numbers: " << myAccRecoIsoEffs.nevents_mus_CS_SB_MC[i_cal] << "; Normalized Numbers: " << myAccRecoIsoEffs.nevents_mus_CS_SB_Normalized[i_cal] << std::endl;
+  //std::cout << "Mus Exp MC Numbers: " << myAccRecoIsoEffs.nevents_mus_exp_SB_MC[i_cal] << "; Mus Exp Normalized Numbers: " << myAccRecoIsoEffs.nevents_mus_exp_SB_Normalized[i_cal] << std::endl;
 //    //std::cout << "Mus Pred Normalized Numbers: " << nevents_mus_pred_SB_Normalized[i_cal] << std::endl;
-//    //std::cout << "Els Exp MC Numbers: " << nevents_els_exp_SB_MC[i_cal] << "; Els Exp Normalized Numbers: " << nevents_els_exp_SB_Normalized[i_cal] << std::endl;
+  //std::cout << "Els Exp MC Numbers: " << myAccRecoIsoEffs.nevents_els_exp_SB_MC[i_cal] << "; Els Exp Normalized Numbers: " << myAccRecoIsoEffs.nevents_els_exp_SB_Normalized[i_cal] << std::endl;
 //    //std::cout << "Els Pred Normalized Numbers: " << nevents_els_pred_SB_Normalized[i_cal] << std::endl;
 //    std::cout << "Lept Exp MC Numbers: " << myAccRecoIsoEffs.nevents_lept_exp_SB_MC[i_cal] << "; Lept Exp Normalized Numbers: " << myAccRecoIsoEffs.nevents_lept_exp_SB_Normalized[i_cal] << std::endl;
 //    //std::cout << "Lept Pred Normalized Numbers: " << nevents_lept_pred_SB_Normalized[i_cal] << std::endl;
-//  }
+  //}
   
 //  TH1D * h_cs_mus_sb = new TH1D("h_cs_mus_sb","",NSEARCH_BINS+1,0,NSEARCH_BINS+1);
 //
@@ -1320,9 +1345,10 @@ NTupleReader *tr =0;
 
 void LoopLLPred( AccRecoIsoEffs& myAccRecoIsoEffs, TTJetsSampleWeight& myTTJetsSampleWeight, double resultspred[NSEARCH_BINS] )
 {
-  const bool storePlots=true;
+  const bool storePlots = false;  //set to false when running LLSys
   ClosureHistgram myClosureHistgram;
-  if (storePlots) myClosureHistgram.BookHistgram("PredLL_mu_2D.root");
+  if (storePlots) myClosureHistgram.BookHistgram("v1_PredLL_pure_el.root");
+  //if (storePlots) myClosureHistgram.BookHistgram("v2_PredLL_data.root");
 
 NTupleReader *tr =0;
 
@@ -1366,21 +1392,23 @@ NTupleReader *tr =0;
       //const double& SusyMotherMass  = trCS.getVar<double>("SusyMotherMass");
       //const double& SusyLSPMass     = trCS.getVar<double>("SusyLSPMass");
 
-//      std::vector<std::string> TriggerNames = trCS.getVec<std::string>("TriggerNames");
-//      std::vector<int> PassTrigger = trCS.getVec<int>("PassTrigger");
-//      bool foundTrigger = false;
-//
-//      for(unsigned it=0; it<TriggerNames.size(); it++)
-//      {
-//	if( TriggerNames[it].find("HLT_PFHT350_PFMET100_JetIdCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_NoiseCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_v*") )
-//	{
-//	  if( PassTrigger[it] ) foundTrigger = true;
-//	}
-//      }
-//
-      //HLT_PFHT300_PFMET100_v
-      //if( !foundTrigger ) std::cout << "FL: trigger not found" << std::endl;
-      //FSLICHEP//if( !foundTrigger ) continue;
+      std::vector<std::string> TriggerNames = trCS.getVec<std::string>("TriggerNames");
+      std::vector<int> PassTrigger = trCS.getVec<int>("PassTrigger");
+      bool foundTrigger = false;
+
+      //for data only!!!
+      for(unsigned it=0; it<TriggerNames.size(); it++)
+      {
+	using namespace std;
+
+	//if( TriggerNames[it].find("HLT_PFHT350_PFMET100_JetIdCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_NoiseCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_v*") )
+	if( TriggerNames[it].find("HLT_PFMET170_NoiseCleaned_v")!= string::npos || TriggerNames[it].find("HLT_PFMET170_JetIdCleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET170_HBHECleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET100_PFMHT100_IDTight_v") != string::npos || TriggerNames[it].find("HLT_PFMET110_PFMHT110_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET120_PFMHT120_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET130_PFMHT130_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET140_PFMHT140_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET150_PFMHT150_IDTight_v")!= string::npos)
+
+	{
+	  if( PassTrigger[it] ) foundTrigger = true;
+	}
+      }
+      if( !foundTrigger ) continue;
 
       //std::cout << "FSL: test" << std::endl;
 
@@ -1550,7 +1578,6 @@ NTupleReader *tr =0;
 
 	    if (storePlots)
 	    {
-		//EventWeight_mus=1;    //for purity study only!!!
 	    (myClosureHistgram.h_pred_mu_all_met)->Fill(met, EventWeight_all_mus*EventWeight_mus);
 	    (myClosureHistgram.h_pred_mu_all_njets)->Fill(njets30, EventWeight_all_mus*EventWeight_mus);
 	    (myClosureHistgram.h_pred_mu_all_mt2)->Fill(MT2, EventWeight_all_mus*EventWeight_mus);
@@ -1655,7 +1682,6 @@ NTupleReader *tr =0;
 
 	    if (storePlots)
 	    {
-		//EventWeight_els=1;    //for purity study only!!!
             (myClosureHistgram.h_pred_el_all_met)->Fill(met, EventWeight_all_els*EventWeight_els);
             (myClosureHistgram.h_pred_el_all_njets)->Fill(njets30, EventWeight_all_els*EventWeight_els);
             (myClosureHistgram.h_pred_el_all_mt2)->Fill(MT2, EventWeight_all_els*EventWeight_els);
@@ -1733,8 +1759,8 @@ NTupleReader *tr =0;
           std::vector<double> elesMiniIso = trCS.getVec<double>("elesMiniIso");
 
 	//for electron purity
-	std::vector<int> PdgId = trCS.getVec<int>("genDecayPdgIdVec");
-	std::vector<TLorentzVector> gen_LVec = trCS.getVec<TLorentzVector>("genDecayLVec");
+	//std::vector<int> PdgId = trCS.getVec<int>("genDecayPdgIdVec");
+	//std::vector<TLorentzVector> gen_LVec = trCS.getVec<TLorentzVector>("genDecayLVec");
 
           double reco_eles_pt = -1, reco_eles_eta = 0, reco_eles_phi = 0;
           double activity = -1;
@@ -1794,7 +1820,9 @@ NTupleReader *tr =0;
 
 	    myAccRecoIsoEffs.EffstoWeights_fromH();
 
+	    //std::cout << "nevents_cs_mus_sb before = " << myAccRecoIsoEffs.nevents_cs_mus_sb[searchbin_id] << std::endl;
 	    ++myAccRecoIsoEffs.nevents_cs_mus_sb[searchbin_id];
+	    //std::cout << "nevents_cs_mus_sb after = " << myAccRecoIsoEffs.nevents_cs_mus_sb[searchbin_id] << std::endl;
 
 	    //std::cout << "ttbar_mtwcorrfactor[0] = " << ttbar_mtwcorrfactor[0] << std::endl;
 	    //mtwcorrfactor
@@ -1815,7 +1843,7 @@ NTupleReader *tr =0;
         if (n_gen_electron=1 && elesLVec.at(0).DeltaR(gen_LVec.at(temp))< 0.4)
         {*/ 
 
-        int n_gen_electron=0;
+        /*int n_gen_electron=0;
         for(int i=0; i < PdgId.size(); i++)
         {
         if(PdgId.at(i) == 11 || PdgId.at(i) == -11 && elesLVec.at(0).DeltaR(gen_LVec.at(i))< 0.2)
@@ -1823,7 +1851,7 @@ NTupleReader *tr =0;
         n_gen_electron++;}
         }
         if (n_gen_electron > 0)
-	{
+	{*/
 
             //muon prediction from muon CS
 	    if (storePlots)
@@ -2022,7 +2050,7 @@ NTupleReader *tr =0;
             myAccRecoIsoEffs.nevents_pred_acc_els_err += myAccRecoIsoEffs.els_EventWeight_acc[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els*myAccRecoIsoEffs.els_EventWeight_acc[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els;
             myAccRecoIsoEffs.nevents_pred_id_els_err += myAccRecoIsoEffs.els_EventWeight_reco[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els*myAccRecoIsoEffs.els_EventWeight_reco[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els;
             myAccRecoIsoEffs.nevents_pred_iso_els_err += myAccRecoIsoEffs.els_EventWeight_iso[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els*myAccRecoIsoEffs.els_EventWeight_iso[njetsbin_number][ptbin_number][acbin_number][htbin_number][searchbin_id]*EventWeight_els;
-         }//end of electron purity
+         //}//end of electron purity
 	 }//mtW5_els<125 (muon CS)
         }//nElectrons == 0 && nMuons == 1 (muon CS)
 	}//end of bool: use_electron_control_sample
@@ -2033,41 +2061,30 @@ NTupleReader *tr =0;
   //std::cout << "sidebandLowMT2 = " << sidebandLowMT2 << std::endl;
   //std::cout << "sidebandHighMT2 = " << sidebandHighMT2 << std::endl;
 
-  //double aveTFfromMC[37]={0.50938294641, 0.54479857283, 0.55589368664, 0.47562009798, 0.47313954851, 0.55585283862, 0.63137075827, 0.49694571031, 0.45654695127, 0.73899860882, 0.77450214989, 0.51858315555, 0.58676123185, 0.61502503663, 0.65623508004, 0.49805541749, 0.62407702117, 0.6823095162, 0.61661615032, 0.60866461656, 0.91230657595, 0.30047597469, 0.31295993515, 0.26905854413, 0.45670624417, 0.47015903259, 0.35177654579, 0.50399066718, 0.44055971649, 0.32361672859, 0.3155307976, 0.30018569397, 0.45286988726, 0.50602656801, 0.41621381186, 0.44509945257, 0.61782010353};
+  // TF muon CS
+  //double aveTFfromMC[84]={0.64718, 0.54607, 0.68486, 0.72258, 0.53391, 0.62296, 0.64942, 0.54682, 0.72027, 0.57920, 0.61270, 0.61530, 0.62862, 0.37975, 0.45417, 0.54550, 0.45707, 0.29137, 0.64549, 0.99841, 0.89697, 0.63376, 0.58900, 0.48153, 0.65243, 0.27659, 0.53326, 0.57811, 0.47716, 0.47412, 0.67794, 0.44542, 0.73614, 0.55661, 0.18247, 0.24244, 0.54556, 0.62026, 0.72007, 0.61392, 0.55420, 0.52652, 0.66536, 0.57971, 0.89502, 0.62887, 0.52408, 0.79464, 0.36406, 0.30258, 0.71393, 0.49519, 0.63497, 0.45040, 0.30237, 0.41106, 0.88353, 0.40487, 0.32024, 0.37574, 0.30400, 0.27665, 0.56934, 0.50703, 0.66099, 0.59415, 0.54465, 0.48374, 0.75598, 0.62101, 0.38479, 0.81652, 0.24710, 0.34828, 0.34683, 0.54442, 0.27696, 0.24813, 0.30250, 0.54704, 0.40792, 0.37645, 0.35962, 0.37900};
+
+  // TF ele CS
+  double aveTFfromMC[84]={0.76810, 0.67570, 0.92517, 0.79962, 0.58213, 0.72719, 0.77320, 0.52420, 0.63397, 0.70466, 0.73023, 0.63788, 0.63530, 0.36003, 0.46102, 0.75163, 0.60728, 0.32000, 0.5, 1.35187, 0.73699, 0.72565, 0.70838, 0.53720, 0.61524, 0.27198, 0.64912, 0.62166, 0.73962, 0.49458, 0.95204, 0.65817, 0.56362, 0.59732, 0.5, 0.29122, 0.24607, 0.76121, 0.83031, 0.99158, 0.74341, 0.53957, 0.75386, 0.77088, 0.76271, 0.59959, 0.76396, 0.59704, 0.43387, 0.34557, 0.83736, 0.49554, 0.73161, 0.52211, 0.53665, 0.39873, 0.88512, 0.46192, 0.37563, 0.43773, 0.29540, 0.49586, 0.69239, 0.53031, 0.66728, 0.71600, 1.05441, 0.51507, 0.85732, 0.94921, 0.51798, 0.67811, 0.30192, 0.35386, 0.48773, 0.58158, 0.43956, 0.33780, 0.42080, 0.35928, 0.55627, 0.56943, 0.64673, 0.64023};
 
 
-  //double aveTFfromMC[45]={0.50938294641, 0.54479857283, 0.55589368664, 0.47562009798, 0.47313954851, 0.55585283862, 0.63137075827, 0.49694571031, 0.45654695127, 0.73899860882, 0.77450214989, 0.52104365541, 0.60239121649, 0.61841946255, 0.68602977735, 0.47571369344, 0.61390093265, 0.70282326462, 0.59551049235, 0.62121857692, 0.79823741008, 0.52378337381, 0.54342635586, 0.70728870479, 0.29863341115, 0.30230795586, 0.25385280375, 0.45733333925, 0.46685659786, 0.35692544256, 0.50504359785, 0.43853793836, 0.32081313052, 0.30348002588, 0.28963527215, 0.44438981801, 0.51552256953, 0.40326995862, 0.36276343558, 0.64257071159, 0.39887754975, 0.38596378496, 0.42245089568, 0.38479498238, 0.37833687369};
 
-  //double aveTFfromMC[59]={0.55347, 0.67387, 0.61141, 0.54937, 0.54725, 0.63727, 0.55182, 0.62907, 0.30486, 0.58223, 0.57274, 0.71943, 0.57290, 0.72634, 0.72020, 0.33790, 0.53360, 0.72222, 1.21865, 1.02533, 0.74698, 0.71353, 0.66977, 0.52476, 0.50922, 0.89214, 0.74934, 0.68842, 0.36153, 0.34438, 0.52775, 0.56833, 0.60254, 0.60309, 0.76332, 0.46730, 0.46887, 0.45869, 0.62370, 0.54502, 0.34302, 0.37405, 0.40613, 0.58999, 0.55086, 0.59882, 0.39324, 0.90137, 0.90115, 0.37601, 0.24105, 0.57766, 0.34594, 0.42217, 0.33566, 0.37051, 0.19585, 0.36191, 0.49791};
+  double psystup[84]={0.222331 ,  0.232846 ,  0.365067 ,  0.693452 ,  0.533625 ,  0.210093 ,  0.235539 ,  0.427174 ,  0.508428 ,  0.279131 ,  0.27366 ,  0.280738 ,  0.362284 ,  1.34308 ,  0.512719 ,  0.395768 ,  0.347547 ,  0.768519 ,  1.18455 ,  0.794172 ,  0.679942 ,  0.215124 ,  0.260163 ,  0.370625 ,  0.443297 ,  1.04235 ,  0.300143 ,  0.363733 ,  0.563737 ,  0.684077 ,  0.677213 ,  0.356993 ,  0.378372 ,  0.912265 ,  1.16299 ,  1.198 ,  11.3234 ,  0.23611 ,  0.282095 ,  0.405362 ,  0.618342 ,  0.287652 ,  0.385904 ,  0.652676 ,  1.37527 ,  0.451081 ,  0.782247 ,  0.601983 ,  0.233522 ,  0.398513 ,  1.38303 ,  0.655637 ,  0.24922 ,  0.348807 ,  0.753337 ,  0.592553 ,  0.447955 ,  1.15275 ,  0.231433 ,  0.536916 ,  0.531596 ,  0.794419 ,  0.262598 ,  0.424343 ,  0.574137 ,  0.321691 ,  0.551045 ,  2.09576 ,  0.846289 ,  0.738532 ,  0.317367 ,  0.70955 ,  1.01619 ,  0.455137 ,  0.495764 ,  0.495544 ,  1.05361 ,  1.4284 ,  0.667495 ,  0.759063 ,  0.60185 ,  0.719594 ,  1.15249 ,  1.69776};
+  double psystdown[84]={0.22234 ,  0.232854 ,  0.365073 ,  0.693455 ,  0.533629 ,  0.210102 ,  0.235547 ,  0.427179 ,  0.508432 ,  0.279138 ,  0.273668 ,  0.280745 ,  0.36229 ,  1.34308 ,  0.512723 ,  0.395773 ,  0.347553 ,  0.768521 ,  1.18455 ,  0.794174 ,  0.679945 ,  0.215133 ,  0.26017 ,  0.370631 ,  0.443301 ,  1.04235 ,  0.30015 ,  0.363739 ,  0.56374 ,  0.68408 ,  0.677216 ,  0.356999 ,  0.378377 ,  0.912267 ,  1.16299 ,  1.198 ,  11.3234 ,  0.236118 ,  0.282102 ,  0.405367 ,  0.618345 ,  0.287659 ,  0.385909 ,  0.652679 ,  1.37527 ,  0.451085 ,  0.782249 ,  0.601986 ,  0.23353 ,  0.398519 ,  1.38303 ,  0.65564 ,  0.249228 ,  0.348812 ,  0.753339 ,  0.592556 ,  0.44796 ,  1.15276 ,  0.231442 ,  0.53692 ,  0.531599 ,  0.794421 ,  0.262606 ,  0.424348 ,  0.57414 ,  0.321697 ,  0.551049 ,  2.09576 ,  0.846291 ,  0.738534 ,  0.317374 ,  0.709553 ,  1.01619 ,  0.455142 ,  0.495768 ,  0.495548 ,  1.05361 ,  1.4284 ,  0.667498 ,  0.759066 ,  0.601853 ,  0.719596 ,  1.15249 ,  1.69776};
 
-  //double aveTFfromMC[59]={0.521, 0.689, 0.644, 0.717, 0.504, 0.613, 0.561, 0.871, 0.238, 0.574, 0.505, 0.715, 0.533, 0.652, 0.697, 0.259, 0.467, 0.469, 0.851, 0.779, 0.615, 0.878, 0.335, 0.532, 0.624, 0.737, 0.703, 0.838, 0.352, 0.334, 0.373, 0.246, 0.582, 0.573, 0.758, 0.523, 0.476, 0.452, 0.464, 0.900, 0.326, 0.318, 0.431, 0.541, 0.498, 0.558, 0.460, 0.692, 0.730, 0.387, 0.269, 0.596, 0.493, 0.366, 0.358, 0.374, 0.248, 0.439, 0.178};
 
-  //double aveTFfromMC[59]={0.53043, 0.68733, 0.65333, 0.70101, 0.52445, 0.65135, 0.55331, 0.50525, 0.26514, 0.60088, 0.58540, 0.68472, 0.53958, 0.67589, 0.69532, 0.26494, 0.51769, 0.50850, 0.98216, 1.04848, 0.67391, 0.79876, 0.48612, 0.53832, 0.63828, 0.70664, 0.74011, 0.82566, 0.35392, 0.34873, 0.41546, 0.22505, 0.61233, 0.56603, 0.74767, 0.52025, 0.47428, 0.45985, 0.65456, 0.61314, 0.32770, 0.31440, 0.43831, 0.55147, 0.53011, 0.56407, 0.45862, 0.70537, 0.74073, 0.38214, 0.23973, 0.58741, 0.50060, 0.36410, 0.35496, 0.37542, 0.26161, 0.44400, 0.17811};
 
-  double aveTFfromMC[59]={0.53043, 0.68733, 0.65333, 0.70101, 0.52445, 0.65135, 0.55331, 0.50525, 0.26514, 0.60088, 0.58540, 0.68472, 0.53958, 0.67589, 0.69532, 0.26494, 0.51769, 0.50850, 0.98216, 1.04848, 0.67391, 0.79876, 0.48612, 0.53832, 0.63828, 0.70664, 0.74011, 0.82566, 0.35392, 0.34873, 0.41546, 0.22505, 0.61233, 0.56603, 0.74767, 0.52025, 0.47428, 0.45985, 0.65456, 0.61314, 0.32770, 0.31440, 0.43831, 0.55147, 0.53011, 0.56407, 0.45862, 0.70537, 0.74073, 0.38214, 0.23973, 0.58741, 0.50060, 0.36410, 0.35496, 0.37542, 0.26161, 0.44400, 0.17811};
-
- //double, psystup[37]={0.149294 ,  0.156028 ,  0.170782 ,  0.251557 ,  0.157696 ,  0.159797 ,  0.196816 ,  0.269567 ,  0.217605 ,  0.188411 ,  0.205831 ,  0.152414 ,  0.1556 ,  0.184521 ,  0.271894 ,  0.184819 ,  0.173421 ,  0.191517 ,  0.278766 ,  0.245826 ,  0.296231 ,  0.176127 ,  0.235712 ,  0.228626 ,  0.16598 ,  0.177104 ,  0.222109 ,  0.251645 ,  0.208664 ,  0.210948 ,  0.279213 ,  0.231705 ,  0.175164 ,  0.186562 ,  0.28631 ,  0.260183 ,  0.239561};
-
-  //double psystup[45]={0.149706 ,  0.156635 ,  0.170685 ,  0.251444 ,  0.157666 ,  0.160303 ,  0.197513 ,  0.268814 ,  0.217869 ,  0.188927 ,  0.206648 ,  0.149137 ,  0.146228 ,  0.161018 ,  0.300102 ,  0.192106 ,  0.174856 ,  0.191143 ,  0.265615 ,  0.273642 ,  0.333063 ,  0.160709 ,  0.186936 ,  0.281573 ,  0.17605 ,  0.233689 ,  0.221836 ,  0.159932 ,  0.169461 ,  0.220388 ,  0.246237 ,  0.200758 ,  0.211591 ,  0.27611 ,  0.232983 ,  0.162081 ,  0.173356 ,  0.31402 ,  0.281801 ,  0.235023 ,  0.172506 ,  0.211313 ,  0.210235 ,  0.21777 ,  0.430502};
-
-// double psystup[59]={0.153826 ,  0.165889 ,  0.247046 ,  1.66503 ,  0.178513 ,  0.177058 ,  0.318357 ,  0.554478 ,  0.332809 ,  0.243916 ,  0.249555 ,  0.661046 ,  0.15448 ,  0.172 ,  0.428146 ,  1.32462 ,  0.209322 ,  0.360871 ,  0.371814 ,  1.03167 ,  0.257624 ,  0.355837 ,  0.763525 ,  0.172662 ,  0.434775 ,  0.677375 ,  0.273899 ,  0.470478 ,  0.155295 ,  0.205738 ,  0.372261 ,  1.64157 ,  0.174096 ,  0.212279 ,  0.705538 ,  0.555891 ,  0.347277 ,  0.29998 ,  0.377704 ,  0.873694 ,  0.158215 ,  0.211727 ,  0.355306 ,  0.186035 ,  0.294232 ,  0.363652 ,  0.696344 ,  0.430562 ,  0.47057 ,  0.189598 ,  0.388406 ,  0.322059 ,  0.437904 ,  0.207241 ,  0.359394 ,  0.246785 ,  0.386214 ,  0.545055 ,  0.605631};
-
- double psystup[59]={0.155047 ,  0.281154 ,  0.244645 ,  0.433794 ,  0.197128 ,  0.174228 ,  0.28971 ,  2.45582 ,  0.407841 ,  0.207625 ,  0.250216 ,  0.257285 ,  0.148682 ,  0.177066 ,  0.303777 ,  2.17044 ,  0.225325 ,  0.211168 ,  0.291955 ,  0.625341 ,  0.249474 ,  0.426052 ,  0.629553 ,  0.158327 ,  0.231519 ,  0.534491 ,  0.219916 ,  0.251324 ,  0.176857 ,  0.268655 ,  0.380819 ,  3.0203 ,  0.1956 ,  0.227937 ,  0.396066 ,  0.68437 ,  0.372619 ,  0.282269 ,  0.373973 ,  0.665709 ,  0.178829 ,  0.228938 ,  0.348194 ,  0.182371 ,  0.285241 ,  0.435131 ,  0.580385 ,  0.294215 ,  0.357817 ,  0.195755 ,  1.51258 ,  0.266141 ,  0.359025 ,  0.940506 ,  0.460595 ,  0.267057 ,  0.42759 ,  0.417905 ,  0.826785};
-
- //double psystdown[37]={0.146536 ,  0.154 ,  0.168976 ,  0.249199 ,  0.153894 ,  0.157871 ,  0.195473 ,  0.26838 ,  0.213521 ,  0.187269 ,  0.204796 ,  0.15015 ,  0.153952 ,  0.183137 ,  0.270346 ,  0.182874 ,  0.172492 ,  0.190701 ,  0.278411 ,  0.244047 ,  0.295598 ,  0.169856 ,  0.231512 ,  0.219935 ,  0.162314 ,  0.173871 ,  0.218384 ,  0.249355 ,  0.206481 ,  0.205355 ,  0.274888 ,  0.223034 ,  0.170817 ,  0.182979 ,  0.282588 ,  0.257035 ,  0.236604 };
-
- // double psystdown[45]={0.146472 ,  0.154139 ,  0.168741 ,  0.249032 ,  0.153711 ,  0.157852 ,  0.195798 ,  0.267831 ,  0.213881 ,  0.187428 ,  0.205209 ,  0.146121 ,  0.143684 ,  0.15986 ,  0.299084 ,  0.189316 ,  0.173324 ,  0.190605 ,  0.265193 ,  0.271275 ,  0.332337 ,  0.158828 ,  0.18535 ,  0.280073 ,  0.169179 ,  0.228928 ,  0.213637 ,  0.156528 ,  0.166648 ,  0.217643 ,  0.244577 ,  0.19968 ,  0.206139 ,  0.272343 ,  0.223643 ,  0.159098 ,  0.170654 ,  0.311411 ,  0.278421 ,  0.233373 ,  0.169348 ,  0.207698 ,  0.205487 ,  0.211313 ,  0.427667};
-
-// double psystdown[59]={0.155121 ,  0.167091 ,  0.247854 ,  1.66515 ,  0.17963 ,  0.178184 ,  0.318984 ,  0.554839 ,  0.33341 ,  0.244734 ,  0.250356 ,  0.661349 ,  0.155769 ,  0.173159 ,  0.428613 ,  1.32477 ,  0.210275 ,  0.361425 ,  0.372352 ,  1.03187 ,  0.258399 ,  0.356399 ,  0.763787 ,  0.173817 ,  0.435234 ,  0.67767 ,  0.274628 ,  0.470903 ,  0.156577 ,  0.206708 ,  0.372798 ,  1.64169 ,  0.175241 ,  0.213219 ,  0.705822 ,  0.556251 ,  0.347852 ,  0.300646 ,  0.378233 ,  0.873923 ,  0.159474 ,  0.21267 ,  0.355868 ,  0.187107 ,  0.294911 ,  0.364202 ,  0.696631 ,  0.431027 ,  0.470995 ,  0.19065 ,  0.38892 ,  0.322679 ,  0.438361 ,  0.208204 ,  0.35995 ,  0.247594 ,  0.386731 ,  0.545422 ,  0.605961};
-
- double psystdown[59]={0.135041 ,  0.17512 ,  0.25655 ,  0.429403 ,  0.180822 ,  0.161191 ,  0.269557 ,  2.70448 ,  0.394197 ,  0.207341 ,  0.252545 ,  0.232165 ,  0.133252 ,  0.163376 ,  0.297673 ,  2.15843 ,  0.213299 ,  0.19908 ,  0.274622 ,  0.596593 ,  0.230761 ,  0.413593 ,  0.63333 ,  0.143975 ,  0.21637 ,  0.502754 ,  0.209333 ,  0.240647 ,  0.154642 ,  0.25382 ,  0.368643 ,  2.96625 ,  0.176922 ,  0.216364 ,  0.392408 ,  0.670447 ,  0.360404 ,  0.274704 ,  0.365873 ,  0.658942 ,  0.153364 ,  0.206316 ,  0.33079 ,  0.167786 ,  0.278542 ,  0.401816 ,  0.560994 ,  0.286035 ,  0.347855 ,  0.176094 ,  1.32009 ,  0.252893 ,  0.338503 ,  0.841751 ,  0.445161 ,  0.242563 ,  0.410078 ,  0.402505 ,  0.626202};
-
- std::cout.precision(1);
- //std::cout.precision(3);
- //std::cout.precision(5);
+  std::cout.precision(1);
+  //std::cout.precision(3);
+  //std::cout.precision(5);
  std::cout << std::fixed;
   for( int i_cal = 0 ; i_cal < NSEARCH_BINS ; i_cal++ )
   {
+
+    if (use_electron_control_sample)
+    {myAccRecoIsoEffs.nevents_mus_pred_SB_Normalized[i_cal] = myAccRecoIsoEffs.nevents_mus_pred_SB_Normalized[i_cal] * electron_purity;
+    myAccRecoIsoEffs.nevents_els_pred_SB_Normalized[i_cal] = myAccRecoIsoEffs.nevents_els_pred_SB_Normalized[i_cal] * electron_purity;}
+
     myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal] = myAccRecoIsoEffs.nevents_mus_pred_SB_Normalized[i_cal] + myAccRecoIsoEffs.nevents_els_pred_SB_Normalized[i_cal];
 //    h_cs_mus_sb->SetBinContent( i_cal+1 , nevents_mus_CS_SB_Normalized[i_cal] );
     if (storePlots)
@@ -2099,6 +2116,10 @@ NTupleReader *tr =0;
     //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]/myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal]*1.83333*(59654914+51873969+30587326)/8000.0/831.76;
     //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]/myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal]*1.83333*(59654914+51873969+30587326)/7647.637518921/831.76;
     //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]/myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal]*1.83333*(59654914+51873969+30587326)/12877.0846508279992/831.76;
+    //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]/myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal]*1.83333*(53057043+60494823+30682233)/36352.970569733/831.76;
+    //std::cout << " 2: " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal];
+    //std::cout << " 3: " << isoTrackEff_SB[i_cal];
+    //std::cout << " 4: " << myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal];
     // 1.83333 c'est 1/(0.43930872+0.10614564)
     //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]/myAccRecoIsoEffs.nevents_cs_mus_sb[i_cal];
     //std::cout << " " << (std::sqrt(myAccRecoIsoEffs.nevents_mus_pred_SB_MC[i_cal])+std::sqrt(myAccRecoIsoEffs.nevents_els_pred_SB_MC[i_cal]))*isoTrackEff_SB[i_cal];
@@ -2111,7 +2132,7 @@ NTupleReader *tr =0;
        //                //std::cout << " " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal] << ",";
 
     // syst
-    resultspred[i_cal]=myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal];
+    //resultspred[i_cal]=myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal];
     //std::cout << "systStatus = " << systStatus << std::endl;
     //if (systStatus==1) std::cout << "Pred[" << i_cal << "] = " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal] << ";" << std::endl;
     //std::cout << "Pred[" << i_cal << "] = " << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal] << ";" << std::endl;
@@ -2130,76 +2151,93 @@ NTupleReader *tr =0;
 
 
 
-
-    if (false)
+    if (true)
     {
-    if (i_cal == 0) std::cout  <<  "0 & 1 & 1 & 200-350 & 200-350 & ";
-    if (i_cal == 1) std::cout  <<  "1 & 1 & 1 & 200-350 & 350-500 & ";
-    if (i_cal == 2) std::cout  <<  "2 & 1 & 1 & 200-350 & 500-650 & ";
-    if (i_cal == 3) std::cout  <<  "3 & 1 & 1 & 200-350 & 650+ & ";
-    if (i_cal == 4) std::cout  <<  "4 & 1 & 1 & 350-450 & 200-350 & ";
-    if (i_cal == 5) std::cout  <<  "5 & 1 & 1 & 350-450 & 350-500 & ";
-    if (i_cal == 6) std::cout  <<  "6 & 1 & 1 & 350-450 & 500-650 & ";
-    if (i_cal == 7) std::cout  <<  "7 & 1 & 1 & 350-450 & 650+ & ";
-    if (i_cal == 8) std::cout  <<  "8 & 1 & 1 & 450+ & 200-350 & ";
-    if (i_cal == 9) std::cout  <<  "9 & 1 & 1 & 450+ & 350-500 & ";
-    if (i_cal == 10) std::cout << "10 & 1 & 1 & 450+ & 500-650 & ";
-    if (i_cal == 11) std::cout << "11 & 1 & 1 & 450+ & 650+ & ";
+    if (i_cal == 0) std::cout  <<  "0 &               1 &               1 &         200-300 &         250-400 & ";
+    if (i_cal == 1) std::cout  <<  "1 &               1 &               1 &         200-300 &         400-500 & ";
+    if (i_cal == 2) std::cout  <<  "2 &               1 &               1 &         200-300 &         500-600 & ";
+    if (i_cal == 3) std::cout  <<  "3 &               1 &               1 &         200-300 &         600-750 & ";
+    if (i_cal == 4) std::cout  <<  "4 &               1 &               1 &         200-550 &            750+ & ";
+    if (i_cal == 5) std::cout  <<  "5 &               1 &               1 &         300-400 &         250-400 & ";
+    if (i_cal == 6) std::cout  <<  "6 &               1 &               1 &         300-400 &         400-500 & ";
+    if (i_cal == 7) std::cout  <<  "7 &               1 &               1 &         300-400 &         500-600 & ";
+    if (i_cal == 8) std::cout  <<  "8 &               1 &               1 &         300-400 &         600-750 & ";
+    if (i_cal == 9) std::cout  <<  "9 &               1 &               1 &         400-550 &         250-400 & ";
+    if (i_cal == 10) std::cout  <<  "10 &               1 &               1 &         400-550 &         400-500 & ";
+    if (i_cal == 11) std::cout  <<  "11 &               1 &               1 &         400-550 &         500-600 & ";
+    if (i_cal == 12) std::cout  <<  "12 &               1 &               1 &         400-550 &         600-750 & ";
+    if (i_cal == 13) std::cout  <<  "13 &               1 &               1 &         550-750 &         250-400 & ";
+    if (i_cal == 14) std::cout  <<  "14 &               1 &               1 &         550-750 &         400-500 & ";
+    if (i_cal == 15) std::cout  <<  "15 &               1 &               1 &         550-750 &         500-600 & ";
+    if (i_cal == 16) std::cout  <<  "16 &               1 &               1 &         550-750 &         600-750 & ";
+    if (i_cal == 17) std::cout  <<  "17 &               1 &               1 &         550-750 &            750+ & ";
+    if (i_cal == 18) std::cout  <<  "18 &               1 &               1 &            750+ &         250-600 & ";
+    if (i_cal == 19) std::cout  <<  "19 &               1 &               1 &            750+ &         600-750 & ";
+    if (i_cal == 20) std::cout  <<  "20 &               1 &               1 &            750+ &            750+ & ";
+    if (i_cal == 21) std::cout  <<  "21 &               1 &               2 &         200-350 &         250-400 & ";
+    if (i_cal == 22) std::cout  <<  "22 &               1 &               2 &         200-350 &         400-500 & ";
+    if (i_cal == 23) std::cout  <<  "23 &               1 &               2 &         200-350 &         500-600 & ";
+    if (i_cal == 24) std::cout  <<  "24 &               1 &               2 &         200-350 &         600-750 & ";
+    if (i_cal == 25) std::cout  <<  "25 &               1 &               2 &         200-650 &            750+ & ";
+    if (i_cal == 26) std::cout  <<  "26 &               1 &               2 &         350-450 &         250-400 & ";
+    if (i_cal == 27) std::cout  <<  "27 &               1 &               2 &         350-450 &         400-500 & ";
+    if (i_cal == 28) std::cout  <<  "28 &               1 &               2 &         350-450 &         500-600 & ";
+    if (i_cal == 29) std::cout  <<  "29 &               1 &               2 &         350-450 &         600-750 & ";
+    if (i_cal == 30) std::cout  <<  "30 &               1 &               2 &         450-650 &         250-400 & ";
+    if (i_cal == 31) std::cout  <<  "31 &               1 &               2 &         450-650 &         400-500 & ";
+    if (i_cal == 32) std::cout  <<  "32 &               1 &               2 &         450-650 &         500-600 & ";
+    if (i_cal == 33) std::cout  <<  "33 &               1 &               2 &         450-650 &         600-750 & ";
+    if (i_cal == 34) std::cout  <<  "34 &               1 &               2 &            650+ &         250-600 & ";
+    if (i_cal == 35) std::cout  <<  "35 &               1 &               2 &            650+ &         600-750 & ";
+    if (i_cal == 36) std::cout  <<  "36 &               1 &               2 &            650+ &            750+ & ";
+    if (i_cal == 37) std::cout  <<  "37 &               1 &              3+ &        300-1000 &         250-350 & ";
+    if (i_cal == 38) std::cout  <<  "38 &               1 &              3+ &        300-1000 &         350-450 & ";
+    if (i_cal == 39) std::cout  <<  "39 &               1 &              3+ &        300-1000 &         450-550 & ";
+    if (i_cal == 40) std::cout  <<  "40 &               1 &              3+ &        300-1000 &            550+ & ";
+    if (i_cal == 41) std::cout  <<  "41 &               1 &              3+ &       1000-1500 &         250-350 & ";
+    if (i_cal == 42) std::cout  <<  "42 &               1 &              3+ &       1000-1500 &         350-450 & ";
+    if (i_cal == 43) std::cout  <<  "43 &               1 &              3+ &       1000-1500 &         450-550 & ";
+    if (i_cal == 44) std::cout  <<  "44 &               1 &              3+ &       1000-1500 &            550+ & ";
+    if (i_cal == 45) std::cout  <<  "45 &               1 &              3+ &           1500+ &         250-350 & ";
+    if (i_cal == 46) std::cout  <<  "46 &               1 &              3+ &           1500+ &         350-550 & ";
+    if (i_cal == 47) std::cout  <<  "47 &               1 &              3+ &           1500+ &            550+ & ";
+    if (i_cal == 48) std::cout  <<  "48 &               2 &               1 &         200-300 &         250-350 & ";
+    if (i_cal == 49) std::cout  <<  "49 &               2 &               1 &         200-300 &         350-450 & ";
+    if (i_cal == 50) std::cout  <<  "50 &               2 &               1 &         200-300 &         450-600 & ";
+    if (i_cal == 51) std::cout  <<  "51 &               2 &               1 &         200-450 &            600+ & ";
+    if (i_cal == 52) std::cout  <<  "52 &               2 &               1 &         300-450 &         250-350 & ";
+    if (i_cal == 53) std::cout  <<  "53 &               2 &               1 &         300-450 &         350-450 & ";
+    if (i_cal == 54) std::cout  <<  "54 &               2 &               1 &         300-450 &         450-600 & ";
+    if (i_cal == 55) std::cout  <<  "55 &               2 &               1 &            450+ &         250-450 & ";
+    if (i_cal == 56) std::cout  <<  "56 &               2 &               1 &            450+ &         450-600 & ";
+    if (i_cal == 57) std::cout  <<  "57 &               2 &               1 &            450+ &            600+ & ";
+    if (i_cal == 58) std::cout  <<  "58 &               2 &               2 &         200-300 &         250-350 & ";
+    if (i_cal == 59) std::cout  <<  "59 &               2 &               2 &         200-300 &         350-450 & ";
+    if (i_cal == 60) std::cout  <<  "60 &               2 &               2 &         200-300 &         450-600 & ";
+    if (i_cal == 61) std::cout  <<  "61 &               2 &               2 &         200-400 &            600+ & ";
+    if (i_cal == 62) std::cout  <<  "62 &               2 &               2 &         300-400 &         250-350 & ";
+    if (i_cal == 63) std::cout  <<  "63 &               2 &               2 &         300-400 &         350-450 & ";
+    if (i_cal == 64) std::cout  <<  "64 &               2 &               2 &         300-400 &         450-600 & ";
+    if (i_cal == 65) std::cout  <<  "65 &               2 &               2 &         400-500 &         250-450 & ";
+    if (i_cal == 66) std::cout  <<  "66 &               2 &               2 &         400-500 &         450-600 & ";
+    if (i_cal == 67) std::cout  <<  "67 &               2 &               2 &            400+ &            600+ & ";
+    if (i_cal == 68) std::cout  <<  "68 &               2 &               2 &            500+ &         250-450 & ";
+    if (i_cal == 69) std::cout  <<  "69 &               2 &               2 &            500+ &         450-600 & ";
+    if (i_cal == 70) std::cout  <<  "70 &               2 &              3+ &         300-900 &         250-350 & ";
+    if (i_cal == 71) std::cout  <<  "71 &               2 &              3+ &         300-900 &         350-500 & ";
+    if (i_cal == 72) std::cout  <<  "72 &               2 &              3+ &        300-1300 &            500+ & ";
+    if (i_cal == 73) std::cout  <<  "73 &               2 &              3+ &        900-1300 &         250-350 & ";
+    if (i_cal == 74) std::cout  <<  "74 &               2 &              3+ &        900-1300 &         350-500 & ";
+    if (i_cal == 75) std::cout  <<  "75 &               2 &              3+ &           1300+ &         250-350 & ";
+    if (i_cal == 76) std::cout  <<  "76 &               2 &              3+ &           1300+ &         350-500 & ";
+    if (i_cal == 77) std::cout  <<  "77 &               2 &              3+ &           1300+ &            500+ & ";
+    if (i_cal == 78) std::cout  <<  "78 &              3+ &               1 &            200+ &         250-350 & ";
+    if (i_cal == 79) std::cout  <<  "79 &              3+ &               1 &            200+ &            350+ & ";
+    if (i_cal == 80) std::cout  <<  "80 &              3+ &               2 &            200+ &         250-400 & ";
+    if (i_cal == 81) std::cout  <<  "81 &              3+ &               2 &            200+ &            400+ & ";
+    if (i_cal == 82) std::cout  <<  "82 &              3+ &              3+ &            200+ &         250-350 & ";
+    if (i_cal == 83) std::cout  <<  "83 &              3+ &              3+ &            200+ &            350+ & ";
 
-    if (i_cal == 12) std::cout << "12 & 1 & 2 & 200-350 & 200-350 & ";
-    if (i_cal == 13) std::cout << "13 & 1 & 2 & 200-350 & 350-500 & ";
-    if (i_cal == 14) std::cout << "14 & 1 & 2 & 200-350 & 500-650 & ";
-    if (i_cal == 15) std::cout << "15 & 1 & 2 & 200-350 & 650+ & ";
-    if (i_cal == 16) std::cout << "16 & 1 & 2 & 350-450 & 200-350 & ";
-    if (i_cal == 17) std::cout << "17 & 1 & 2 & 350-450 & 350-500 & ";
-    if (i_cal == 18) std::cout << "18 & 1 & 2 & 350-450 & 500-650 & ";
-    if (i_cal == 19) std::cout << "19 & 1 & 2 & 350-450 & 650+ & ";
-    if (i_cal == 20) std::cout << "20 & 1 & 2 & 450+ & 200-500 & ";
-    if (i_cal == 21) std::cout << "21 & 1 & 2 & 450+ & 500-650 & ";
-    if (i_cal == 22) std::cout << "22 & 1 & 2 & 450+ & 650+ & ";
-
-    if (i_cal == 23) std::cout << "23 & 1 & 3+ & 200-350 & 200-350 & ";
-    if (i_cal == 24) std::cout << "24 & 1 & 3+ & 200-350 & 350-500 & ";
-    if (i_cal == 25) std::cout << "25 & 1 & 3+ & 200-350 & 500+ & ";
-    if (i_cal == 26) std::cout << "26 & 1 & 3+ & 350+ & 200-350 & ";
-    if (i_cal == 27) std::cout << "27 & 1 & 3+ & 350+ & 350+ & ";
-
-    if (i_cal == 28) std::cout << "28 & 2 & 1 & 200-350 & 200-350 & ";
-    if (i_cal == 29) std::cout << "29 & 2 & 1 & 200-350 & 350-500 & ";
-    if (i_cal == 30) std::cout << "30 & 2 & 1 & 200-350 & 500-650 & ";
-    if (i_cal == 31) std::cout << "31 & 2 & 1 & 200-350 & 650+ & ";
-    if (i_cal == 32) std::cout << "32 & 2 & 1 & 350-450 & 200-350 & ";
-    if (i_cal == 33) std::cout << "33 & 2 & 1 & 350-450 & 350-500 & ";
-    if (i_cal == 34) std::cout << "34 & 2 & 1 & 350-450 & 500-650 & ";
-    if (i_cal == 35) std::cout << "35 & 2 & 1 & 350-450 & 650+ & ";
-    if (i_cal == 36) std::cout << "36 & 2 & 1 & 450+ & 200-350 & ";
-    if (i_cal == 37) std::cout << "37 & 2 & 1 & 450+ & 350-500 & ";
-    if (i_cal == 38) std::cout << "38 & 2 & 1 & 450+ & 500-650 & ";
-    if (i_cal == 39) std::cout << "39 & 2 & 1 & 450+ & 650+ & ";
-
-    if (i_cal == 40) std::cout << "40 & 2 & 2 & 200-350 & 200-350 & ";
-    if (i_cal == 41) std::cout << "41 & 2 & 2 & 200-350 & 350-500 & ";
-    if (i_cal == 42) std::cout << "42 & 2 & 2 & 200-350 & 500+ & ";
-    if (i_cal == 43) std::cout << "43 & 2 & 2 & 350-450 & 200-350 & ";
-    if (i_cal == 44) std::cout << "44 & 2 & 2 & 350-450 & 350-500 & ";
-    if (i_cal == 45) std::cout << "45 & 2 & 2 & 350-450 & 500+ & ";
-    if (i_cal == 46) std::cout << "46 & 2 & 2 & 450+ & 200-350 & ";
-    if (i_cal == 47) std::cout << "47 & 2 & 2 & 450+ & 350-500 & ";
-    if (i_cal == 48) std::cout << "48 & 2 & 2 & 450+ & 500+ & ";
-
-    if (i_cal == 49) std::cout << "49 & 2 & 3+ & 200-350 & 200-350 & ";
-    if (i_cal == 50) std::cout << "50 & 2 & 3+ & 200-350 & 350+ & ";
-    if (i_cal == 51) std::cout << "51 & 2 & 3+ & 350+ & 200-350 & ";
-    if (i_cal == 52) std::cout << "52 & 2 & 3+ & 350+ & 350+ & ";
-
-    if (i_cal == 53) std::cout << "53 & 3+ & 1 & 200+ & 200-350 & ";
-    if (i_cal == 54) std::cout << "54 & 3+ & 1 & 200+ & 350+ & ";
-
-    if (i_cal == 55) std::cout << "55 & 3+ & 2 & 200+ & 200-350 & ";
-    if (i_cal == 56) std::cout << "56 & 3+ & 2 & 200+ & 350+ & ";
-
-    if (i_cal == 57) std::cout << "57 & 3+ & 3+ & 200+ & 200-350 & ";
-    if (i_cal == 58) std::cout << "58 & 3+ & 3+ & 200+ & 350+ & ";
 
 
     std::cout << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal] << " $^{+" << std::sqrt(((std::sqrt(myAccRecoIsoEffs.nevents_mus_pred_SB_MC[i_cal])+std::sqrt(myAccRecoIsoEffs.nevents_els_pred_SB_MC[i_cal]))*isoTrackEff_SB[i_cal])*((std::sqrt(myAccRecoIsoEffs.nevents_mus_pred_SB_MC[i_cal])+std::sqrt(myAccRecoIsoEffs.nevents_els_pred_SB_MC[i_cal]))*isoTrackEff_SB[i_cal])+1.8333*aveTFfromMC[i_cal]*1.8333*aveTFfromMC[i_cal]) << "}_{-" << (std::sqrt(myAccRecoIsoEffs.nevents_mus_pred_SB_MC[i_cal])+std::sqrt(myAccRecoIsoEffs.nevents_els_pred_SB_MC[i_cal]))*isoTrackEff_SB[i_cal] << "}$ $^{+" << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]*psystup[i_cal] << "}_{-" << myAccRecoIsoEffs.nevents_lept_pred_SB_Normalized[i_cal]*isoTrackEff_SB[i_cal]*psystdown[i_cal] << "}$" << " \\\\ " << 
@@ -2260,19 +2298,21 @@ std::endl;
 
 void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
 {
+  //std::cout <<__LINE__<<std::endl;
   //https://twiki.cern.ch/twiki/bin/view/CMS/SUSLeptonSF#2016_analyses_80X_Data_and_MC_IC
-  std::cout << "Computing syst: " << std::endl;
+  std::cout << "----Computing syst: " << std::endl;
   AccRecoIsoEffs myAccRecoIsoEffs;
   double resultspred[NSEARCH_BINS]={0};
   LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspred );
+  //return ;
 
-  const bool domureco=false;
+  const bool domureco=true;
   const bool domuiso=false;
   const bool dodimu=false;
   const bool dodie=false;
   const bool doereco=false;
   const bool doeiso=false;
-  const bool doacc=true;
+  const bool doacc=false;
 
   if (domureco)
   {
@@ -2280,7 +2320,7 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
   AccRecoIsoEffs myAccRecoIsoEffs2;
   double resultspredStatUp[NSEARCH_BINS]={0};
   double MuRecoEff[PT_BINS][AC_BINS] = {{0}}, MuRecoEff_Stat_Unc_up[PT_BINS][AC_BINS] = {{0}}, MuRecoEff_Stat_Unc_dn[PT_BINS][AC_BINS] = {{0}};
-  TFile *fin = TFile::Open("v160714_newMuonID_Effs2dPlots.root");
+  TFile *fin = TFile::Open("v2_Effs2dPlots.root");
   TH2D * murecoeff;
   murecoeff = (TH2D*)fin->Get("mus_recoeffs")->Clone();
 
@@ -2324,7 +2364,7 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
 
   std::cout << "Computing syst mu reco syst up: " << std::endl;
   AccRecoIsoEffs myAccRecoIsoEffs4;
-  double resultspredSystUp[NSEARCH_BINS]={0};
+/*  double resultspredSystUp[NSEARCH_BINS]={0};
   for(int i=0;i<PT_BINS;++i)
   {
     for(int j=0;j<AC_BINS;++j)
@@ -2379,9 +2419,9 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       ttbar_mus_recoeff[i][j]=MuRecoEff[i][j];
     }
   }
-
+*/
   }
-
+/*
   if (domuiso)
   {
   std::cout << "Computing syst mu iso stat up: " << std::endl;
@@ -3013,7 +3053,7 @@ err_acc_el[58] = 0.1356854731;
   }
   
 
-
+*/
   std::cout << "syst is done" << std::endl;
   return ;
 }
@@ -3042,12 +3082,13 @@ int main(int argc, char* argv[])
   //TTJets nominal
   //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_", 831.76, 11339232, LUMI, inputFileList_Cal );
 
-  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromT_", 831.76*0.5*TTbar_SingleLept_BR,  53057043, LUMI, inputFileList_Cal );
-  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromTbar", 831.76*0.5*TTbar_SingleLept_BR, 60494823, LUMI, inputFileList_Cal );
-  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_DiLept", 831.76*TTbar_DiLept_BR, 30682233, LUMI, inputFileList_Cal );
-
+  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromT_", 831.76*0.5*TTbar_SingleLept_BR,  53057043, LUMI, inputFileList_Cal );
+  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromTbar", 831.76*0.5*TTbar_SingleLept_BR, 60494823, LUMI, inputFileList_Cal );
+  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_DiLept", 831.76*TTbar_DiLept_BR, 30682233, LUMI, inputFileList_Cal );
+/*
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "tW_top" , 35.6, 998400, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "tW_antitop" , 35.6, 985000, LUMI, inputFileList_Cal );
+
 
   // 1.21 is the kf
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-200To400" , 359.7*1.21, 19591498, LUMI, inputFileList_Cal );
@@ -3056,12 +3097,16 @@ int main(int argc, char* argv[])
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-800To1200" , 5.501*1.21, 7854734, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-1200To2500" , 1.329*1.21, 7023857, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-2500ToInf" , 0.03216*1.21, 2507809, LUMI, inputFileList_Cal );
-  
+*/
+
+  //data
+  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "MET" , 1, 1, 1.0, inputFileList_Cal );  
 
   //LoopLLCal( myAccRecoIsoEffs, myTTJetsSampleWeight );
   //LoopLLExp( myAccRecoIsoEffs, myTTJetsSampleWeight );
   double results[NSEARCH_BINS]={0};
   LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, results );
+  //std::cout << " what the hell happened!!" << std::endl;
   //LoopLLSyst( myTTJetsSampleWeight );
 
   std::cout << "done" << std::endl;
@@ -3167,6 +3212,16 @@ void AccRecoIsoEffs::EffsPlotsGen()
 {
   int i_cal;
   int j_cal;
+TFile *Effs2dPlots = new TFile("Effs2dPlots.root", "recreate");
+double ptbins[PT_BINS+1]={10.0,20.0,30.0,40.0,50.0,70.0,100.0,120.0};
+double acbins[AC_BINS+2]={0.0,0.005,0.02,0.05,0.15,1.0,10.0};
+double njetbins[NJETS_BINS+1]={3.5,4.5,5.5,6.5,7.5,8.5,9.5};
+double htbins[NHT_BINS+1]={500.0,650.0,900.0,1400.0};
+TH2D *mus_recoeffs2d  = new TH2D("mus_recoeffs","Muon RecoEffs",PT_BINS,ptbins,AC_BINS+1,acbins);
+TH2D *mus_isoeffs2d  = new TH2D("mus_isoeffs","Muon IsoEffs",PT_BINS,ptbins,AC_BINS+1,acbins);
+TH2D *els_recoeffs2d  = new TH2D("els_recoeffs","Electron RecoEffs",PT_BINS,ptbins,AC_BINS+1,acbins);
+TH2D *els_isoeffs2d  = new TH2D("els_isoeffs","Electron IsoEffs",PT_BINS,ptbins,AC_BINS+1,acbins);
+TH2D *mus_acc2d  = new TH2D("mus_acc","mus_acc",NJETS_BINS,njetbins,NHT_BINS,htbins);
 
   for(i_cal = 0 ; i_cal < PT_BINS ; i_cal++)
   {
@@ -3416,7 +3471,7 @@ void AccRecoIsoEffs::printAccRecoIsoEffs()
 {
   int i_cal = 0;
   int j_cal = 0;
-  std::cout.precision(3);
+  //std::cout.precision(3);
 
   std::cout << "mtW correction factor & ";
   for( i_cal=0 ; i_cal < PT_BINS ; i_cal++ )
@@ -3779,7 +3834,7 @@ void AccRecoIsoEffs::printAccRecoIsoEffs()
 void AccRecoIsoEffs::printEffsHeader()
 {
   std::ofstream EffsHeader;
-  EffsHeader.open ("new_EffsHeader_MuCS.h");
+  EffsHeader.open ("v5_EffsHeader_MuCS.h");
 
   int i_cal = 0;
   int j_cal = 0;
@@ -3797,7 +3852,7 @@ void AccRecoIsoEffs::printEffsHeader()
   for( int searchbinc = 0 ; searchbinc < NSEARCH_BINS ; ++searchbinc )
   {
 
-std::cout << "mu bin " << searchbinc +1 << " acc " << nmus_acc_sb[searchbinc] << " all " << nmus_sb[searchbinc] << " raw acc " << nmus_acc_MC_sb[searchbinc] << " raw all " << nmus_MC_sb[searchbinc] << std::endl;
+std::cout << "mu bin " << searchbinc << " acc " << nmus_acc_sb[searchbinc] << " all " << nmus_sb[searchbinc] << " eff " << nmus_acc_sb[searchbinc]/nmus_sb[searchbinc] << " raw acc " << nmus_acc_MC_sb[searchbinc] << " raw all " << nmus_MC_sb[searchbinc] << std::endl;
 //std::cout << "eff" << nmus_acc_sb[searchbinc]/nmus_sb[searchbinc] << std::endl;
 
     if( searchbinc == 0 ) { EffsHeader << "{"; }
@@ -3805,6 +3860,36 @@ std::cout << "mu bin " << searchbinc +1 << " acc " << nmus_acc_sb[searchbinc] <<
     if( searchbinc != NSEARCH_BINS-1 ) { EffsHeader << ","; }
     if( searchbinc == NSEARCH_BINS-1 ) { EffsHeader << "};" << std::endl; }
   }
+
+//for merge mu acc bins!!!
+
+std::cout << "bin 4 = " << (nmus_acc_sb[4] + nmus_acc_sb[17]) / (nmus_sb[4] + nmus_sb[17]) << " err = " << get_stat_Error(nmus_acc_MC_sb[4] + nmus_acc_MC_sb[17] ,nmus_MC_sb[4] + nmus_MC_sb[17]) << std::endl;
+std::cout << "bin 13 = " << (nmus_acc_sb[13] + nmus_acc_sb[14]) / (nmus_sb[13] + nmus_sb[14]) << " err = " << get_stat_Error(nmus_acc_MC_sb[13] + nmus_acc_MC_sb[14] ,nmus_MC_sb[13] + nmus_MC_sb[14]) << std::endl;
+std::cout << "bin 17 = " << (nmus_acc_sb[4] + nmus_acc_sb[17]) / (nmus_sb[4] + nmus_sb[17]) << " err = " << get_stat_Error(nmus_acc_MC_sb[4] + nmus_acc_MC_sb[17] ,nmus_MC_sb[4] + nmus_MC_sb[17]) << std::endl;
+std::cout << "bin 18 = " << (nmus_acc_sb[18] + nmus_acc_sb[19]) / (nmus_sb[18] + nmus_sb[19]) << " err = " << get_stat_Error(nmus_acc_MC_sb[18] + nmus_acc_MC_sb[19] ,nmus_MC_sb[18] + nmus_MC_sb[19]) << std::endl;
+std::cout << "bin 19 = " << (nmus_acc_sb[18] + nmus_acc_sb[19]) / (nmus_sb[18] + nmus_sb[19]) << " err = " << get_stat_Error(nmus_acc_MC_sb[18] + nmus_acc_MC_sb[19] ,nmus_MC_sb[18] + nmus_MC_sb[19]) << std::endl;
+std::cout << "bin 20 = " << (nmus_acc_sb[18] + nmus_acc_sb[19] + nmus_acc_sb[20]) / (nmus_sb[18] + nmus_sb[19] + nmus_sb[20]) << " err = " << get_stat_Error(nmus_acc_MC_sb[18] + nmus_acc_MC_sb[19]+ nmus_acc_MC_sb[20] ,nmus_MC_sb[18] + nmus_MC_sb[19] + nmus_MC_sb[20]) << std::endl;
+std::cout << "bin 25 = " << (nmus_acc_sb[25] + nmus_acc_sb[36]) / (nmus_sb[25] + nmus_sb[36]) << " err = " << get_stat_Error(nmus_acc_MC_sb[25] + nmus_acc_MC_sb[36] ,nmus_MC_sb[25] + nmus_MC_sb[36]) << std::endl;
+std::cout << "bin 29 = " << (nmus_acc_sb[29] + nmus_acc_sb[28]) / (nmus_sb[29] + nmus_sb[28]) << " err = " << get_stat_Error(nmus_acc_MC_sb[29] + nmus_acc_MC_sb[28] ,nmus_MC_sb[29] + nmus_MC_sb[28]) << std::endl;
+std::cout << "bin 33 = " << (nmus_acc_sb[33] + nmus_acc_sb[32]) / (nmus_sb[33] + nmus_sb[32]) << " err = " << get_stat_Error(nmus_acc_MC_sb[33] + nmus_acc_MC_sb[32] ,nmus_MC_sb[33] + nmus_MC_sb[32]) << std::endl;
+std::cout << "bin 34 = " << (nmus_acc_sb[34] + nmus_acc_sb[35]) / (nmus_sb[34] + nmus_sb[35]) << " err = " << get_stat_Error(nmus_acc_MC_sb[34] + nmus_acc_MC_sb[35] ,nmus_MC_sb[34] + nmus_MC_sb[35]) << std::endl;
+std::cout << "bin 35 = " << (nmus_acc_sb[34] + nmus_acc_sb[35]) / (nmus_sb[34] + nmus_sb[35]) << " err = " << get_stat_Error(nmus_acc_MC_sb[34] + nmus_acc_MC_sb[35] ,nmus_MC_sb[34] + nmus_MC_sb[35]) << std::endl;
+std::cout << "bin 36 = " << (nmus_acc_sb[25] + nmus_acc_sb[36]) / (nmus_sb[25] + nmus_sb[36]) << " err = " << get_stat_Error(nmus_acc_MC_sb[25] + nmus_acc_MC_sb[36] ,nmus_MC_sb[25] + nmus_MC_sb[36]) << std::endl;
+std::cout << "bin 40 = " << (nmus_acc_sb[40] + nmus_acc_sb[39]) / (nmus_sb[40] + nmus_sb[39]) << " err = " << get_stat_Error(nmus_acc_MC_sb[40] + nmus_acc_MC_sb[39] ,nmus_MC_sb[40] + nmus_MC_sb[39]) << std::endl;
+std::cout << "bin 47 = " << (nmus_acc_sb[47] + nmus_acc_sb[46]) / (nmus_sb[47] + nmus_sb[46]) << " err = " << get_stat_Error(nmus_acc_MC_sb[47] + nmus_acc_MC_sb[46] ,nmus_MC_sb[47] + nmus_MC_sb[46]) << std::endl;
+std::cout << "bin 51 = " << (nmus_acc_sb[51] + nmus_acc_sb[57]) / (nmus_sb[51] + nmus_sb[57]) << " err = " << get_stat_Error(nmus_acc_MC_sb[51] + nmus_acc_MC_sb[57] ,nmus_MC_sb[51] + nmus_MC_sb[57]) << std::endl;
+std::cout << "bin 57 = " << (nmus_acc_sb[51] + nmus_acc_sb[57]) / (nmus_sb[51] + nmus_sb[57]) << " err = " << get_stat_Error(nmus_acc_MC_sb[51] + nmus_acc_MC_sb[57] ,nmus_MC_sb[51] + nmus_MC_sb[57]) << std::endl;
+std::cout << "bin 61 = " << (nmus_acc_sb[61] + nmus_acc_sb[67]) / (nmus_sb[61] + nmus_sb[67]) << " err = " << get_stat_Error(nmus_acc_MC_sb[61] + nmus_acc_MC_sb[67] ,nmus_MC_sb[61] + nmus_MC_sb[67]) << std::endl;
+std::cout << "bin 67 = " << (nmus_acc_sb[61] + nmus_acc_sb[67]) / (nmus_sb[61] + nmus_sb[67]) << " err = " << get_stat_Error(nmus_acc_MC_sb[61] + nmus_acc_MC_sb[67] ,nmus_MC_sb[61] + nmus_MC_sb[67]) << std::endl;
+std::cout << "bin 69 = " << (nmus_acc_sb[69] + nmus_acc_sb[68]) / (nmus_sb[69] + nmus_sb[68]) << " err = " << get_stat_Error(nmus_acc_MC_sb[69] + nmus_acc_MC_sb[68] ,nmus_MC_sb[69] + nmus_MC_sb[68]) << std::endl;
+std::cout << "bin 72 = " << (nmus_acc_sb[72] + nmus_acc_sb[77]) / (nmus_sb[72] + nmus_sb[77]) << " err = " << get_stat_Error(nmus_acc_MC_sb[72] + nmus_acc_MC_sb[77] ,nmus_MC_sb[72] + nmus_MC_sb[77]) << std::endl;
+std::cout << "bin 77 = " << (nmus_acc_sb[72] + nmus_acc_sb[77]) / (nmus_sb[72] + nmus_sb[77]) << " err = " << get_stat_Error(nmus_acc_MC_sb[72] + nmus_acc_MC_sb[77] ,nmus_MC_sb[72] + nmus_MC_sb[77]) << std::endl;
+std::cout << "bin 79 = " << (nmus_acc_sb[79] + nmus_acc_sb[78]) / (nmus_sb[79] + nmus_sb[78]) << " err = " << get_stat_Error(nmus_acc_MC_sb[79] + nmus_acc_MC_sb[78] ,nmus_MC_sb[79] + nmus_MC_sb[78]) << std::endl;
+std::cout << "bin 81 = " << (nmus_acc_sb[81] + nmus_acc_sb[80]) / (nmus_sb[81] + nmus_sb[80]) << " err = " << get_stat_Error(nmus_acc_MC_sb[81] + nmus_acc_MC_sb[80] ,nmus_MC_sb[81] + nmus_MC_sb[80]) << std::endl;
+std::cout << "bin 82 = " << (nmus_acc_sb[82] + nmus_acc_sb[83]) / (nmus_sb[82] + nmus_sb[83]) << " err = " << get_stat_Error(nmus_acc_MC_sb[82] + nmus_acc_MC_sb[83] ,nmus_MC_sb[82] + nmus_MC_sb[83]) << std::endl;
+std::cout << "bin 83 = " << (nmus_acc_sb[82] + nmus_acc_sb[83]) / (nmus_sb[82] + nmus_sb[83]) << " err = " << get_stat_Error(nmus_acc_MC_sb[82] + nmus_acc_MC_sb[83] ,nmus_MC_sb[82] + nmus_MC_sb[83]) << std::endl;
+
+
 
   EffsHeader << "  double ttbar_mus_recoeff[" << PT_BINS << "][" << AC_BINS << "] = ";
   for( i_cal = 0 ; i_cal < PT_BINS ; i_cal++ )
@@ -3842,7 +3927,7 @@ std::cout << "mu bin " << searchbinc +1 << " acc " << nmus_acc_sb[searchbinc] <<
   for( int searchbinc = 0 ; searchbinc < NSEARCH_BINS ; ++searchbinc )
   {
 
-std::cout << "el bin " << searchbinc +1 << " acc " << nels_acc[searchbinc] << " all " << nels[searchbinc] << " raw acc " << nels_acc_MC[searchbinc] << " raw all " << nels_MC[searchbinc] << std::endl;
+std::cout << "el bin " << searchbinc << " acc " << nels_acc[searchbinc] << " all " << nels[searchbinc] << " eff " << nels_acc[searchbinc]/nels[searchbinc] << " raw acc " << nels_acc_MC[searchbinc] << " raw all " << nels_MC[searchbinc] << std::endl;
 
 //els_acc[searchbinc] = nels_acc[searchbinc]/nels[searchbinc];
     if( searchbinc == 0 ) { EffsHeader << "{"; }
@@ -3852,6 +3937,31 @@ std::cout << "el bin " << searchbinc +1 << " acc " << nels_acc[searchbinc] << " 
     if( searchbinc == NSEARCH_BINS-1 ) { EffsHeader << "};" << std::endl; }
   }
 
+std::cout << "bin 4 = " << (nels_acc[4] + nels_acc[17]) / (nels[4] + nels[17]) << " err = " << get_stat_Error(nels_acc_MC[4] + nels_acc_MC[17] ,nels_MC[4] + nels_MC[17]) << std::endl;
+std::cout << "bin 13 = " << (nels_acc[13] + nels_acc[14]) / (nels[13] + nels[14]) << " err = " << get_stat_Error(nels_acc_MC[13] + nels_acc_MC[14] ,nels_MC[13] + nels_MC[14]) << std::endl;
+std::cout << "bin 17 = " << (nels_acc[4] + nels_acc[17]) / (nels[4] + nels[17]) << " err = " << get_stat_Error(nels_acc_MC[4] + nels_acc_MC[17] ,nels_MC[4] + nels_MC[17]) << std::endl;
+std::cout << "bin 18 = " << (nels_acc[18] + nels_acc[19] + nels_acc[20]) / (nels[18] + nels[19] + nels[20]) << " err = " << get_stat_Error(nels_acc_MC[18] + nels_acc_MC[19]+ nels_acc_MC[20] ,nels_MC[18] + nels_MC[19] + nels_MC[20]) << std::endl;
+std::cout << "bin 19 = " << (nels_acc[18] + nels_acc[19] + nels_acc[20]) / (nels[18] + nels[19] + nels[20]) << " err = " << get_stat_Error(nels_acc_MC[18] + nels_acc_MC[19]+ nels_acc_MC[20] ,nels_MC[18] + nels_MC[19] + nels_MC[20]) << std::endl;
+std::cout << "bin 20 = " << (nels_acc[18] + nels_acc[19] + nels_acc[20]) / (nels[18] + nels[19] + nels[20]) << " err = " << get_stat_Error(nels_acc_MC[18] + nels_acc_MC[19]+ nels_acc_MC[20] ,nels_MC[18] + nels_MC[19] + nels_MC[20]) << std::endl;
+std::cout << "bin 25 = " << (nels_acc[25] + nels_acc[36]) / (nels[25] + nels[36]) << " err = " << get_stat_Error(nels_acc_MC[25] + nels_acc_MC[36] ,nels_MC[25] + nels_MC[36]) << std::endl;
+std::cout << "bin 29 = " << (nels_acc[29] + nels_acc[28]) / (nels[29] + nels[28]) << " err = " << get_stat_Error(nels_acc_MC[29] + nels_acc_MC[28] ,nels_MC[29] + nels_MC[28]) << std::endl;
+std::cout << "bin 33 = " << (nels_acc[33] + nels_acc[32]) / (nels[33] + nels[32]) << " err = " << get_stat_Error(nels_acc_MC[33] + nels_acc_MC[32] ,nels_MC[33] + nels_MC[32]) << std::endl;
+std::cout << "bin 34 = " << (nels_acc[34] + nels_acc[35]) / (nels[34] + nels[35]) << " err = " << get_stat_Error(nels_acc_MC[34] + nels_acc_MC[35] ,nels_MC[34] + nels_MC[35]) << std::endl;
+std::cout << "bin 35 = " << (nels_acc[34] + nels_acc[35]) / (nels[34] + nels[35]) << " err = " << get_stat_Error(nels_acc_MC[34] + nels_acc_MC[35] ,nels_MC[34] + nels_MC[35]) << std::endl;
+std::cout << "bin 36 = " << (nels_acc[25] + nels_acc[36]) / (nels[25] + nels[36]) << " err = " << get_stat_Error(nels_acc_MC[25] + nels_acc_MC[36] ,nels_MC[25] + nels_MC[36]) << std::endl;
+std::cout << "bin 40 = " << (nels_acc[40] + nels_acc[39]) / (nels[40] + nels[39]) << " err = " << get_stat_Error(nels_acc_MC[40] + nels_acc_MC[39] ,nels_MC[40] + nels_MC[39]) << std::endl;
+std::cout << "bin 47 = " << (nels_acc[47] + nels_acc[46]) / (nels[47] + nels[46]) << " err = " << get_stat_Error(nels_acc_MC[47] + nels_acc_MC[46] ,nels_MC[47] + nels_MC[46]) << std::endl;
+std::cout << "bin 51 = " << (nels_acc[51] + nels_acc[57]) / (nels[51] + nels[57]) << " err = " << get_stat_Error(nels_acc_MC[51] + nels_acc_MC[57] ,nels_MC[51] + nels_MC[57]) << std::endl;
+std::cout << "bin 57 = " << (nels_acc[51] + nels_acc[57]) / (nels[51] + nels[57]) << " err = " << get_stat_Error(nels_acc_MC[51] + nels_acc_MC[57] ,nels_MC[51] + nels_MC[57]) << std::endl;
+std::cout << "bin 61 = " << (nels_acc[61] + nels_acc[67]) / (nels[61] + nels[67]) << " err = " << get_stat_Error(nels_acc_MC[61] + nels_acc_MC[67] ,nels_MC[61] + nels_MC[67]) << std::endl;
+std::cout << "bin 67 = " << (nels_acc[61] + nels_acc[67]) / (nels[61] + nels[67]) << " err = " << get_stat_Error(nels_acc_MC[61] + nels_acc_MC[67] ,nels_MC[61] + nels_MC[67]) << std::endl;
+std::cout << "bin 69 = " << (nels_acc[69] + nels_acc[68]) / (nels[69] + nels[68]) << " err = " << get_stat_Error(nels_acc_MC[69] + nels_acc_MC[68] ,nels_MC[69] + nels_MC[68]) << std::endl;
+std::cout << "bin 72 = " << (nels_acc[72] + nels_acc[77]) / (nels[72] + nels[77]) << " err = " << get_stat_Error(nels_acc_MC[72] + nels_acc_MC[77] ,nels_MC[72] + nels_MC[77]) << std::endl;
+std::cout << "bin 77 = " << (nels_acc[72] + nels_acc[77]) / (nels[72] + nels[77]) << " err = " << get_stat_Error(nels_acc_MC[72] + nels_acc_MC[77] ,nels_MC[72] + nels_MC[77]) << std::endl;
+std::cout << "bin 79 = " << (nels_acc[79] + nels_acc[78]) / (nels[79] + nels[78]) << " err = " << get_stat_Error(nels_acc_MC[79] + nels_acc_MC[78] ,nels_MC[79] + nels_MC[78]) << std::endl;
+std::cout << "bin 81 = " << (nels_acc[81] + nels_acc[80]) / (nels[81] + nels[80]) << " err = " << get_stat_Error(nels_acc_MC[81] + nels_acc_MC[80] ,nels_MC[81] + nels_MC[80]) << std::endl;
+std::cout << "bin 82 = " << (nels_acc[82] + nels_acc[83]) / (nels[82] + nels[83]) << " err = " << get_stat_Error(nels_acc_MC[82] + nels_acc_MC[83] ,nels_MC[82] + nels_MC[83]) << std::endl;
+std::cout << "bin 83 = " << (nels_acc[82] + nels_acc[83]) / (nels[82] + nels[83]) << " err = " << get_stat_Error(nels_acc_MC[82] + nels_acc_MC[83] ,nels_MC[82] + nels_MC[83]) << std::endl;
 
   EffsHeader << "  double ttbar_els_recoeff[" << PT_BINS << "][" << AC_BINS << "] = ";
   for( i_cal = 0 ; i_cal < PT_BINS ; i_cal++ )
