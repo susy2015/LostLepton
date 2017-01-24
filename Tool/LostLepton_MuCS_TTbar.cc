@@ -1397,18 +1397,18 @@ NTupleReader *tr =0;
       bool foundTrigger = false;
 
       //for data only!!!
-      for(unsigned it=0; it<TriggerNames.size(); it++)
-      {
-	using namespace std;
-
-	//if( TriggerNames[it].find("HLT_PFHT350_PFMET100_JetIdCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_NoiseCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_v*") )
-	if( TriggerNames[it].find("HLT_PFMET170_NoiseCleaned_v")!= string::npos || TriggerNames[it].find("HLT_PFMET170_JetIdCleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET170_HBHECleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET100_PFMHT100_IDTight_v") != string::npos || TriggerNames[it].find("HLT_PFMET110_PFMHT110_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET120_PFMHT120_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET130_PFMHT130_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET140_PFMHT140_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET150_PFMHT150_IDTight_v")!= string::npos)
-
-	{
-	  if( PassTrigger[it] ) foundTrigger = true;
-	}
-      }
-      if( !foundTrigger ) continue;
+//      for(unsigned it=0; it<TriggerNames.size(); it++)
+//      {
+//	using namespace std;
+//
+//	//if( TriggerNames[it].find("HLT_PFHT350_PFMET100_JetIdCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_NoiseCleaned_v") || TriggerNames[it].find("HLT_PFHT350_PFMET100_v*") )
+//	if( TriggerNames[it].find("HLT_PFMET170_NoiseCleaned_v")!= string::npos || TriggerNames[it].find("HLT_PFMET170_JetIdCleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET170_HBHECleaned_v") != string::npos || TriggerNames[it].find("HLT_PFMET100_PFMHT100_IDTight_v") != string::npos || TriggerNames[it].find("HLT_PFMET110_PFMHT110_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET120_PFMHT120_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET130_PFMHT130_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET140_PFMHT140_IDTight_v")!= string::npos || TriggerNames[it].find("HLT_PFMET150_PFMHT150_IDTight_v")!= string::npos)
+//
+//	{
+//	  if( PassTrigger[it] ) foundTrigger = true;
+//	}
+//      }
+//      if( !foundTrigger ) continue;
 
       //std::cout << "FSL: test" << std::endl;
 
@@ -2074,9 +2074,9 @@ NTupleReader *tr =0;
 
 
 
-  std::cout.precision(1);
+  //std::cout.precision(1);
   //std::cout.precision(3);
-  //std::cout.precision(5);
+  std::cout.precision(5);
  std::cout << std::fixed;
   for( int i_cal = 0 ; i_cal < NSEARCH_BINS ; i_cal++ )
   {
@@ -2151,7 +2151,7 @@ NTupleReader *tr =0;
 
 
 
-    if (true)
+    if (false)
     {
     if (i_cal == 0) std::cout  <<  "0 &               1 &               1 &         200-300 &         250-400 & ";
     if (i_cal == 1) std::cout  <<  "1 &               1 &               1 &         200-300 &         400-500 & ";
@@ -2304,7 +2304,7 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
   AccRecoIsoEffs myAccRecoIsoEffs;
   double resultspred[NSEARCH_BINS]={0};
   LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspred );
-  //return ;
+  myAccRecoIsoEffs.init();
 
   const bool domureco=true;
   const bool domuiso=false;
@@ -2317,10 +2317,9 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
   if (domureco)
   {
   std::cout << "Computing syst mu reco stat up: " << std::endl;
-  AccRecoIsoEffs myAccRecoIsoEffs2;
   double resultspredStatUp[NSEARCH_BINS]={0};
   double MuRecoEff[PT_BINS][AC_BINS] = {{0}}, MuRecoEff_Stat_Unc_up[PT_BINS][AC_BINS] = {{0}}, MuRecoEff_Stat_Unc_dn[PT_BINS][AC_BINS] = {{0}};
-  TFile *fin = TFile::Open("v2_Effs2dPlots.root");
+  TFile *fin = TFile::Open("Effs2dPlots.root");
   TH2D * murecoeff;
   murecoeff = (TH2D*)fin->Get("mus_recoeffs")->Clone();
 
@@ -2348,10 +2347,10 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       ttbar_mus_recoeff[i][j]=MuRecoEff_Stat_Unc_up[i][j];
     }
   }
-  LoopLLPred( myAccRecoIsoEffs2, myTTJetsSampleWeight, resultspredStatUp );
+  LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspredStatUp );
+  myAccRecoIsoEffs.init();
 
   std::cout << "Computing syst mu reco stat dn: " << std::endl;
-  AccRecoIsoEffs myAccRecoIsoEffs3;
   double resultspredStatDn[NSEARCH_BINS]={0};
   for(int i=0;i<PT_BINS;++i)
   {
@@ -2360,11 +2359,11 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       ttbar_mus_recoeff[i][j]=MuRecoEff_Stat_Unc_dn[i][j];
     }
   }
-  LoopLLPred( myAccRecoIsoEffs3, myTTJetsSampleWeight, resultspredStatDn );
+  LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspredStatDn );
+  myAccRecoIsoEffs.init();
 
   std::cout << "Computing syst mu reco syst up: " << std::endl;
-  AccRecoIsoEffs myAccRecoIsoEffs4;
-/*  double resultspredSystUp[NSEARCH_BINS]={0};
+  double resultspredSystUp[NSEARCH_BINS]={0};
   for(int i=0;i<PT_BINS;++i)
   {
     for(int j=0;j<AC_BINS;++j)
@@ -2373,11 +2372,10 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       if (ttbar_mus_recoeff[i][j]>1.0) ttbar_mus_recoeff[i][j]=1.0;
     }
   }
-  LoopLLPred( myAccRecoIsoEffs4, myTTJetsSampleWeight, resultspredSystUp );
-
+  LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspredSystUp );
+  myAccRecoIsoEffs.init();
 
   std::cout << "Computing syst mu reco syst dn: " << std::endl;
-  AccRecoIsoEffs myAccRecoIsoEffs5;
   double resultspredSystDn[NSEARCH_BINS]={0};
   for(int i=0;i<PT_BINS;++i)
   {
@@ -2387,8 +2385,8 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       if (ttbar_mus_recoeff[i][j]<0.0) ttbar_mus_recoeff[i][j]=0.0;
     }
   }
-  LoopLLPred( myAccRecoIsoEffs5, myTTJetsSampleWeight, resultspredSystDn );
-
+  LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, resultspredSystDn );
+  myAccRecoIsoEffs.init();
 
   std::cout << "mu reco syst dn:" << std::endl;
   for( int i_cal = 0 ; i_cal < NSEARCH_BINS ; i_cal++ )
@@ -2419,7 +2417,7 @@ void LoopLLSyst( TTJetsSampleWeight& myTTJetsSampleWeight )
       ttbar_mus_recoeff[i][j]=MuRecoEff[i][j];
     }
   }
-*/
+
   }
 /*
   if (domuiso)
@@ -3082,10 +3080,10 @@ int main(int argc, char* argv[])
   //TTJets nominal
   //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_", 831.76, 11339232, LUMI, inputFileList_Cal );
 
-  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromT_", 831.76*0.5*TTbar_SingleLept_BR,  53057043, LUMI, inputFileList_Cal );
-  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromTbar", 831.76*0.5*TTbar_SingleLept_BR, 60494823, LUMI, inputFileList_Cal );
-  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_DiLept", 831.76*TTbar_DiLept_BR, 30682233, LUMI, inputFileList_Cal );
-/*
+  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromT_", 831.76*0.5*TTbar_SingleLept_BR,  53057043, LUMI, inputFileList_Cal );
+  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_SingleLeptFromTbar", 831.76*0.5*TTbar_SingleLept_BR, 60494823, LUMI, inputFileList_Cal );
+  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "TTJets_DiLept", 831.76*TTbar_DiLept_BR, 30682233, LUMI, inputFileList_Cal );
+
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "tW_top" , 35.6, 998400, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "tW_antitop" , 35.6, 985000, LUMI, inputFileList_Cal );
 
@@ -3097,17 +3095,17 @@ int main(int argc, char* argv[])
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-800To1200" , 5.501*1.21, 7854734, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-1200To2500" , 1.329*1.21, 7023857, LUMI, inputFileList_Cal );
   myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "WJetsToLNu_HT-2500ToInf" , 0.03216*1.21, 2507809, LUMI, inputFileList_Cal );
-*/
+
 
   //data
-  myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "MET" , 1, 1, 1.0, inputFileList_Cal );  
+  //myTTJetsSampleWeight.TTJetsSampleInfo_push_back( "MET" , 1, 1, 1.0, inputFileList_Cal );  
 
   //LoopLLCal( myAccRecoIsoEffs, myTTJetsSampleWeight );
   //LoopLLExp( myAccRecoIsoEffs, myTTJetsSampleWeight );
-  double results[NSEARCH_BINS]={0};
-  LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, results );
+  //double results[NSEARCH_BINS]={0};
+  //LoopLLPred( myAccRecoIsoEffs, myTTJetsSampleWeight, results );
   //std::cout << " what the hell happened!!" << std::endl;
-  //LoopLLSyst( myTTJetsSampleWeight );
+  LoopLLSyst( myTTJetsSampleWeight );
 
   std::cout << "done" << std::endl;
   //std::cout << "main: printOverview" << std::endl;
