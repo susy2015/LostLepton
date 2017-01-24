@@ -92,7 +92,7 @@ class AccRecoIsoEffs
   double mtwall[PT_BINS] = {0}, mtw100[PT_BINS] = {0};
 
   //here we define the event weight we are going to use in the second loop ( muon/electron CS and prediction plots)
-  double mus_EventWeight_iso[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS] = {{{{0}}}}, mus_EventWeight_reco[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS] = {{{{0}}}}, mus_EventWeight_acc[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}};
+  double mus_EventWeight_iso[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}}, mus_EventWeight_reco[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}}, mus_EventWeight_acc[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}};
   double els_EventWeight_iso[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}}, els_EventWeight_reco[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}}, els_EventWeight_acc[NJETS_BINS][PT_BINS][AC_BINS][NHT_BINS][NSEARCH_BINS] = {{{{{0}}}}};
 
   //here we define the search bin variables
@@ -141,7 +141,7 @@ class AccRecoIsoEffs
   double corrfactor_di_mus_err = 0;
   double corrfactor_di_els_err = 0;
 
-  TFile *Effs2dPlots = new TFile("Effs2dPlots.root", "recreate");
+  TFile *Effs2dPlots = new TFile("new_Effs2dPlots.root", "recreate");
   double ptbins[PT_BINS+1]={10.0,20.0,30.0,40.0,50.0,70.0,100.0,120.0};
   double acbins[AC_BINS+2]={0.0,0.005,0.02,0.05,0.15,1.0,10.0};
   double njetbins[NJETS_BINS+1]={3.5,4.5,5.5,6.5,7.5,8.5,9.5};
@@ -399,6 +399,7 @@ class ClosureHistgram
   TH1D *h_exp_lept_all_Z_sb, *h_exp_lept_all_Z_njets30, *h_exp_lept_all_Z_njets50, *h_exp_lept_all_Z_ntops, *h_exp_lept_all_Z_nbjets, *h_exp_lept_all_Z_MET, *h_exp_lept_all_Z_MT2, *h_exp_lept_all_Z_HT;
 
   TH2D *h_pred_lept_all_2d_met_mupt;
+  TH2D *h_pred_el_all_2d_met_njets;
 
   TH1D *h_exp_elsingle_all_met, *h_exp_elsingle_all_njets, *h_exp_elsingle_all_mt2, *h_exp_elsingle_all_ht, *h_exp_elsingle_all_mht, *h_exp_elsingle_all_ntopjets;
 
@@ -523,6 +524,7 @@ void ClosureHistgram::BookHistgram(const char *outFileName)
 
   h_pred_lept_all_met = new TH1D("h_pred_lept_all_met","",100,0,1000);
   h_pred_lept_all_2d_met_mupt = new TH2D("h_pred_lept_all_2d_met_mupt","",100,-10,10,100,0,100);
+  h_pred_el_all_2d_met_njets = new TH2D("h_pred_el_all_2d_met_njets","",100,0,1000,20,0,20);
   h_pred_lept_all_njets = new TH1D("h_pred_lept_all_njets","",20,0,20);
   h_pred_lept_all_mt2 = new TH1D("h_pred_lept_all_mt2","",100,0,1000);
   h_pred_lept_all_ht = new TH1D("h_pred_lept_all_ht","",300,0,3000);
